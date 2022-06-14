@@ -1,3 +1,7 @@
+const apiKey =  // insert Mailchimp API key
+const listID =  // insert Mailchimp list ID
+const server =  // insert server from Mailchimp API key
+
 const express = require("express");
 const bodyParser = require('body-parser');
 const https = require("https");
@@ -16,8 +20,40 @@ app.post("/", function (req, res) {
     const firstName = req.body.inputFirstName;
     const lastName = req.body.inputLastName;
     const email = req.body.inputEmail;
-    console.log(firstName + lastName + email)
+
+    const data = {
+        members: [
+            {
+                email_address: email,
+                status: "subscribed",
+                merge_fields: {
+                    FNAME: firstName,
+                    LNAME: lastName
+                }
+
+            }
+        ]
+    }
+
+    const jsonData = JSON.stringify(data);
+
+    const url = "https://" + server + ".api.mailchimp.com/3.0/lists/" + listID;
+    const options = {
+        method: "POST",
+        auth: "Name:" + apiKey
+    }
+
+    const request = https.request(url, options, function(request){
+        request.on("data", function(data) {
+            console.log(JSON.parse(data));
+        });
+    });
+
+    request.write(jsonData);
+    request.end();
+
     res.send("Success");
+
 });
 
   app.listen("3000", function() {
